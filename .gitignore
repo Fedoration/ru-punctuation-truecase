@@ -160,3 +160,7 @@ cython_debug/
 #.idea/
 
 *.txt
+*.csv
+*.tar.gz
+*.gz
+*.conll
