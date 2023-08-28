@@ -164,3 +164,4 @@ cython_debug/
 *.tar.gz
 *.gz
 *.conll
+.DS_Store
