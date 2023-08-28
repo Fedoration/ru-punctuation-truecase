@@ -5,6 +5,8 @@ import random
 import re
 import string
 
+from process_text import clean_text, clean_text_3times
+
 CHARS = ".,?!-"
 
 
@@ -34,6 +36,7 @@ def process_sentences(
     with open(in_file, "r", encoding="utf-8") as fin:
         with open(out_file, "w", encoding="utf-8") as fout:
             for i, line in enumerate(fin.readlines()):
+                line = clean_text_3times(line)
                 pre_line = line.strip()
                 line = line.strip()
 
@@ -52,14 +55,15 @@ def process_sentences(
 
                 line = re.sub("[ \t]+", " ", line)
 
+                # if the line contains than 256 words, then slice to 256 words
+                # this is can be problem for max input to the Bert model (512 tokens)
+                splitted_line = line.split()
+                if len(splitted_line) > 256:
+                    splitted_line = splitted_line[:256]  
+                    line = ' '.join(splitted_line) 
+
                 if i % 1000 == 0:
                     print(pre_line + " → " + line)
-
-                if percent_to_cut > 0:
-                    line = line.split()
-                    if random.random() < percent_to_cut:
-                        line = line[: len(line) // 2]
-                    line = " ".join(line)
 
                 if len(lines_to_combine) >= num_to_combine:
                     if samples_count == num_samples:
