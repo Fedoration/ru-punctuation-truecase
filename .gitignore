@@ -170,3 +170,4 @@ notebooks/logs/
 notebooks/results/
 notebooks/wandb/
 src/wandb/
+src/results/
