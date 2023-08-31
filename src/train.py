@@ -236,7 +236,7 @@ def main():
     )
 
     # freeze bert layers
-    for param in model.bert.parameters():
+    for param in model.base_model.parameters():
         param.requires_grad = False
 
     print("Model has been initialized")
