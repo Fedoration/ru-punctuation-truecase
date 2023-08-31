@@ -143,7 +143,7 @@ def main():
 
     unique_labels = set(tag for doc in train_tags for tag in doc)
     label_names = list(unique_labels)
-    LABEL_NAMES = label_names.copy()
+    global LABEL_NAMES = label_names.copy()
     label2id = {tag: id for id, tag in enumerate(label_names)}
     id2label = {id: tag for tag, id in label2id.items()}
 
@@ -233,6 +233,9 @@ def main():
     model = AutoModelForTokenClassification.from_pretrained(
         MODEL_NAME, num_labels=len(label_names), id2label=id2label, label2id=label2id
     )
+
+    for param in model.bert.parameters():
+        param.requires_grad = False
 
     print("Model has been initialized")
 
