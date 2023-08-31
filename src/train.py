@@ -260,7 +260,6 @@ def main():
         save_strategy="epoch",
         evaluation_strategy="epoch",
         logging_dir="./logs",
-        logging_steps=10,
         report_to="wandb",
     )
 
