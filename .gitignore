@@ -164,4 +164,9 @@ cython_debug/
 *.tar.gz
 *.gz
 *.conll
+*.pickle
 .DS_Store
+notebooks/logs/
+notebooks/results/
+notebooks/wandb/
+src/wandb/
