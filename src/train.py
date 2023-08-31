@@ -143,7 +143,8 @@ def main():
 
     unique_labels = set(tag for doc in train_tags for tag in doc)
     label_names = list(unique_labels)
-    global LABEL_NAMES = label_names.copy()
+    global LABEL_NAMES
+    LABEL_NAMES = label_names.copy()
     label2id = {tag: id for id, tag in enumerate(label_names)}
     id2label = {id: tag for tag, id in label2id.items()}
 
@@ -234,6 +235,7 @@ def main():
         MODEL_NAME, num_labels=len(label_names), id2label=id2label, label2id=label2id
     )
 
+    # freeze bert layers
     for param in model.bert.parameters():
         param.requires_grad = False
 
