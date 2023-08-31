@@ -2,6 +2,12 @@
 MODEL_NAME = "DeepPavlov/rubert-base-cased-conversational"
 SHORT_MODEL_NAME = MODEL_NAME.split("/")[1] if "/" in MODEL_NAME else MODEL_NAME
 MODEL_MAX_LENGTH = 512
+TRAIN_BATCH_SIZE = 128
+VAL_BATCH_SIZE = 128
+TRAIN_EPOCHS = 3
+LEARNING_RATE = 2e-5
+WARMUP_STEPS = 500
+WEIGHT_DECAY = 0.01
 
 # Data
 PATH_TO_DATA = "../data"

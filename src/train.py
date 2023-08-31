@@ -16,7 +16,18 @@ from transformers import (
 )
 
 import wandb
-from config import MODEL_MAX_LENGTH, MODEL_NAME, PATH_TO_DATA, SHORT_MODEL_NAME
+from config import (
+    LEARNING_RATE,
+    MODEL_MAX_LENGTH,
+    MODEL_NAME,
+    PATH_TO_DATA,
+    SHORT_MODEL_NAME,
+    TRAIN_BATCH_SIZE,
+    TRAIN_EPOCHS,
+    VAL_BATCH_SIZE,
+    WARMUP_STEPS,
+    WEIGHT_DECAY,
+)
 from process_text import clean_text, clean_text_3times
 
 LABEL_NAMES = []
@@ -235,12 +246,12 @@ def main():
 
     training_args = TrainingArguments(
         output_dir="./results",
-        num_train_epochs=3,
-        per_device_train_batch_size=16,
-        per_device_eval_batch_size=16,
-        learning_rate=2e-5,
-        warmup_steps=500,
-        weight_decay=0.01,
+        num_train_epochs=TRAIN_EPOCHS,
+        per_device_train_batch_size=TRAIN_BATCH_SIZE,
+        per_device_eval_batch_size=VAL_BATCH_SIZE,
+        learning_rate=LEARNING_RATE,
+        warmup_steps=WARMUP_STEPS,
+        weight_decay=WEIGHT_DECAY,
         save_strategy="epoch",
         evaluation_strategy="epoch",
         logging_dir="./logs",
