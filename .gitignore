@@ -171,3 +171,4 @@ notebooks/results/
 notebooks/wandb/
 src/wandb/
 src/results/
+src/saved_models/

@@ -1,6 +1,7 @@
 import os
 import pickle
 from typing import List, Tuple
+from datetime import datetime
 
 import evaluate
 import numpy as np
@@ -63,7 +64,7 @@ def encode_tags(tags, tag2id, encodings):
     encoded_labels = []
     for doc_labels, doc_offset in zip(labels, encodings.offset_mapping):
         # create an empty array of -100
-        doc_enc_labels = np.ones(len(doc_offset),dtype=int) * -100
+        doc_enc_labels = np.ones(len(doc_offset), dtype=int) * -100
         arr_offset = np.array(doc_offset)
 
         # set labels whose first offset position is 0 and the second is not 0
@@ -100,13 +101,15 @@ def compute_metrics(eval_preds):
     predictions = np.argmax(logits, axis=-1)
 
     # Remove ignored index (special tokens) and convert to labels
-    global LABEL_NAMES
-    true_labels = [[LABEL_NAMES[l] for l in label if l != -100] for label in labels]
+    label_names = ['O', 'U']
+    true_labels = [[label_names[l] for l in label if l != -100] for label in labels]
     true_predictions = [
-        [LABEL_NAMES[p] for (p, l) in zip(prediction, label) if l != -100]
+        [label_names[p] for (p, l) in zip(prediction, label) if l != -100]
         for prediction, label in zip(predictions, labels)
     ]
-    all_metrics = METRIC.compute(predictions=true_predictions, references=true_labels)
+
+    metric = evaluate.load("seqeval")
+    all_metrics = metric.compute(predictions=true_predictions, references=true_labels)
     return {
         "precision": all_metrics["overall_precision"],
         "recall": all_metrics["overall_recall"],
@@ -130,6 +133,7 @@ class CapitalizationDataset(torch.utils.data.Dataset):
 
 
 def main():
+    datetime_start_training = datetime.now()
     # ========== Load dataset ==========
     print("Start loading dataset")
 
@@ -142,10 +146,8 @@ def main():
     val_texts, val_tags = textlabel2arrays(path_to_val_text, path_to_val_labels)
 
     unique_labels = set(tag for doc in train_tags for tag in doc)
-    label_names = list(unique_labels)
-    global LABEL_NAMES
-    LABEL_NAMES = label_names.copy()
-    print(LABEL_NAMES)
+    label_names = ['O', 'U']
+    print(label_names)
     label2id = {tag: id for id, tag in enumerate(label_names)}
     id2label = {id: tag for tag, id in label2id.items()}
 
@@ -259,7 +261,7 @@ def main():
     )
 
     training_args = TrainingArguments(
-        output_dir="./results",
+        output_dir=f"./results/{SHORT_MODEL_NAME}-{MODEL_MAX_LENGTH}-{'tatoeba_dataset'}/{datetime_start_training.strftime('%H-%M-%S')}",
         num_train_epochs=TRAIN_EPOCHS,
         per_device_train_batch_size=TRAIN_BATCH_SIZE,
         per_device_eval_batch_size=VAL_BATCH_SIZE,
@@ -283,6 +285,13 @@ def main():
     trainer.train()
     wandb.finish()
     print("Training has been finished")
+
+    print("Start saving model")
+    
+    path_to_save = f"saved_models/{SHORT_MODEL_NAME}-{MODEL_MAX_LENGTH}-{'tatoeba_dataset'}/{datetime_start_training.strftime('%H-%M-%S')}"
+    trainer.save_model(path_to_save)
+    
+    print(f"Model has been saved to {path_to_save}")
 
 
 if __name__ == "__main__":
