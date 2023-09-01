@@ -36,26 +36,25 @@ METRIC = evaluate.load("seqeval")
 
 def file2array(path_to_file: str) -> List[List[str]]:
     result = []
-    with open(path_to_file, "r") as f:
+    with open(path_to_file, 'r') as f:
         for line in f.readlines():
             line = line.strip()
-            result.append(line.split(" "))
+            result.append(line.split(' '))
     return result
 
 
-def textlabel2arrays(
-    path_to_text: str, path_to_labels: str
-) -> Tuple[List[List[str]], List[List[str]]]:
+def textlabel2arrays(path_to_text: str, path_to_labels: str) -> Tuple[List[List[str]], List[List[str]]]:
     texts = []
     labels = []
-    with open(path_to_text, "r") as f_text:
-        with open(path_to_labels, "r") as f_labels:
+    with open(path_to_text, 'r', encoding='utf-8') as f_text:
+        with open(path_to_labels, 'r', encoding='utf-8') as f_labels:
             for line_text, line_labels in zip(f_text.readlines(), f_labels.readlines()):
+
                 line_text = line_text.strip()
                 line_labels = line_labels.strip()
-
-                texts.append(line_text.split(" "))
-                labels.append(line_labels.split(" "))
+                
+                texts.append(line_text.split(' '))
+                labels.append(line_labels.split(' '))
     return texts, labels
 
 
@@ -64,11 +63,11 @@ def encode_tags(tags, tag2id, encodings):
     encoded_labels = []
     for doc_labels, doc_offset in zip(labels, encodings.offset_mapping):
         # create an empty array of -100
-        doc_enc_labels = np.ones(len(doc_offset), dtype=int) * -100
+        doc_enc_labels = np.ones(len(doc_offset),dtype=int) * -100
         arr_offset = np.array(doc_offset)
 
         # set labels whose first offset position is 0 and the second is not 0
-        doc_enc_labels[(arr_offset[:, 0] == 0) & (arr_offset[:, 1] != 0)] = doc_labels
+        doc_enc_labels[(arr_offset[:,0] == 0) & (arr_offset[:,1] != 0)] = doc_labels
         encoded_labels.append(doc_enc_labels.tolist())
 
     return encoded_labels
@@ -81,18 +80,18 @@ def save_to_pickle(filename: str, data):
     else:
         print("Error: %s file not found" % filename)
 
-    with open(f"{filename}", "wb") as handle:
+    with open(f'{filename}', 'wb') as handle:
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def load_from_pickle(filename: str):
     data = None
     if os.path.isfile(filename):
-        with open(f"{filename}", "rb") as handle:
+        with open(f'{filename}', 'rb') as handle:
             data = pickle.load(handle)
     else:
         print("Error: %s file not found" % filename)
-
+        
     return data
 
 
@@ -101,6 +100,7 @@ def compute_metrics(eval_preds):
     predictions = np.argmax(logits, axis=-1)
 
     # Remove ignored index (special tokens) and convert to labels
+    global LABEL_NAMES
     true_labels = [[LABEL_NAMES[l] for l in label if l != -100] for label in labels]
     true_predictions = [
         [LABEL_NAMES[p] for (p, l) in zip(prediction, label) if l != -100]
@@ -133,10 +133,10 @@ def main():
     # ========== Load dataset ==========
     print("Start loading dataset")
 
-    path_to_train_text = f"{PATH_TO_DATA}/tatoeba_dataset/text_train.txt"
-    path_to_train_labels = f"{PATH_TO_DATA}/tatoeba_dataset/labels_train.txt"
-    path_to_val_text = f"{PATH_TO_DATA}/tatoeba_dataset/text_dev.txt"
-    path_to_val_labels = f"{PATH_TO_DATA}/tatoeba_dataset/labels_dev.txt"
+    path_to_train_text = "../data/tatoeba_dataset/text_train.txt"
+    path_to_train_labels = "../data/tatoeba_dataset/labels_train.txt"
+    path_to_val_text = "../data/tatoeba_dataset/text_dev.txt"
+    path_to_val_labels = "../data/tatoeba_dataset/labels_dev.txt"
 
     train_texts, train_tags = textlabel2arrays(path_to_train_text, path_to_train_labels)
     val_texts, val_tags = textlabel2arrays(path_to_val_text, path_to_val_labels)
@@ -145,6 +145,7 @@ def main():
     label_names = list(unique_labels)
     global LABEL_NAMES
     LABEL_NAMES = label_names.copy()
+    print(LABEL_NAMES)
     label2id = {tag: id for id, tag in enumerate(label_names)}
     id2label = {id: tag for tag, id in label2id.items()}
 
@@ -169,6 +170,7 @@ def main():
     train_encodings = load_from_pickle(pickle_filename)
     if not train_encodings:
         # if there are no train encodings, calculate them
+        print(f"file {pickle_filename} starting generate")
         train_encodings = tokenizer(
             train_texts,
             is_split_into_words=True,
@@ -177,6 +179,7 @@ def main():
             truncation=True,
         )
         # save train_encodings
+        print(f"saving {pickle_filename}")
         save_to_pickle(pickle_filename, train_encodings)
 
     # load val_encodings
@@ -184,6 +187,7 @@ def main():
     val_encodings = load_from_pickle(pickle_filename)
     if not val_encodings:
         # if there are no val encodings, calculate them
+        print(f"file {pickle_filename} starting generate")
         val_encodings = tokenizer(
             val_texts,
             is_split_into_words=True,
@@ -192,6 +196,7 @@ def main():
             truncation=True,
         )
         # save val_encodings
+        print(f"saving {pickle_filename}")
         save_to_pickle(pickle_filename, val_encodings)
 
     # load train_labels
@@ -199,9 +204,11 @@ def main():
     train_labels = load_from_pickle(pickle_filename)
     if not train_labels:
         # if there are no train labels, calculate them
+        print(f"file {pickle_filename} starting generate")
         train_labels = encode_tags(train_tags, label2id, train_encodings)
 
         # save train labels
+        print(f"saving {pickle_filename}")
         save_to_pickle(pickle_filename, train_labels)
 
     # load val_labels
@@ -211,9 +218,11 @@ def main():
     val_labels = load_from_pickle(pickle_filename)
     if not val_labels:
         # if there are no val labels, calculate them
+        print(f"file {pickle_filename} starting generate")
         val_labels = encode_tags(val_tags, label2id, val_encodings)
 
         # save train labels
+        print(f"saving {pickle_filename}")
         save_to_pickle(pickle_filename, val_labels)
 
     print("Tokens has been loaded")
@@ -236,7 +245,7 @@ def main():
     )
 
     # freeze bert layers
-    for param in model.parameters():
+    for param in model.base_model.parameters():
         param.requires_grad = False
 
     print("Model has been initialized")
