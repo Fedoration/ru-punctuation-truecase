@@ -261,7 +261,7 @@ def main():
     )
 
     training_args = TrainingArguments(
-        output_dir=f"./results/{SHORT_MODEL_NAME}-{MODEL_MAX_LENGTH}-{'tatoeba_dataset'}/{datetime_start_training.strftime('%H-%M-%S')}",
+        output_dir=f"./results/{SHORT_MODEL_NAME}-{MODEL_MAX_LENGTH}-{'tatoeba_dataset'}/{datetime_start_training.strftime('%d-%m-%Y-%H-%M-%S')}",
         num_train_epochs=TRAIN_EPOCHS,
         per_device_train_batch_size=TRAIN_BATCH_SIZE,
         per_device_eval_batch_size=VAL_BATCH_SIZE,
@@ -288,7 +288,7 @@ def main():
 
     print("Start saving model")
     
-    path_to_save = f"saved_models/{SHORT_MODEL_NAME}-{MODEL_MAX_LENGTH}-{'tatoeba_dataset'}/{datetime_start_training.strftime('%H-%M-%S')}"
+    path_to_save = f"saved_models/{SHORT_MODEL_NAME}-{MODEL_MAX_LENGTH}-{'tatoeba_dataset'}/{datetime_start_training.strftime('%d-%m-%Y-%H-%M-%S')}"
     trainer.save_model(path_to_save)
     
     print(f"Model has been saved to {path_to_save}")
