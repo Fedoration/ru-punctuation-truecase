@@ -11,7 +11,7 @@ def main():
         is_question=True,
     )
 
-    test_queries = ["кто такая алла пугачёва", "столица россии", "что такое москва"]
+    test_queries = ["кто такая алла, !?пугачёва", "столица россии", "что такое москва"]
 
     recapitalized_queries = recapitalization_model.restore_capitalization(test_queries)
     for query, result in zip(test_queries, recapitalized_queries):

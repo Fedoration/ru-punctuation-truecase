@@ -1,25 +1,23 @@
-import os
 import re
 import string
 from typing import List, Tuple
 
-import numpy as np
-import pandas as pd
 import torch
-from config import MODEL_MAX_LENGTH, MODEL_NAME, PATH_TO_CHECKPOINT
 from transformers import AutoModel, AutoModelForTokenClassification, AutoTokenizer
 
 
 class TextHandler:
+    """A class that performs some manipulations with text, such as splitting text into words, converting to lowercase, removing punctuation marks, etc."""
+
     @staticmethod
     def split_texts_into_words(texts: List[str]) -> List[List[str]]:
-        """Разбивает каждый текст в батче на слова с разделением по пробелам
+        """Splits each text in the batch into words separated by spaces
 
         Args:
-            texts (List[str]): массив текстов
+            texts (List[str]): array of texts
 
         Returns:
-            List[List[str]]: возвращает массив текстов, разделенных на слова
+            List[List[str]]: returns an array of texts divided into words
         """
         texts_words = []
         for text in texts:
@@ -30,6 +28,14 @@ class TextHandler:
 
     @staticmethod
     def remove_punctuation(line: str) -> str:
+        """Removes punctuation from the input text
+
+        Args:
+            line (str): input text
+
+        Returns:
+            str: input text without punctuation
+        """
         all_punct_marks = string.punctuation + "«»—"
 
         line = (
@@ -50,15 +56,34 @@ class TextHandler:
         return line.strip()
 
     @staticmethod
-    def cast_to_lower_and_remove_punctuation(line: str) -> str:
+    def convert_to_lowercase_and_remove_punctuation(line: str) -> str:
+        """Converts the input text to lowercase and removes punctuation
+
+        Args:
+            line (str): input text
+
+        Returns:
+            str: input text in lowercase without punctuation
+        """
         line = line.lower()
         line = TextHandler.remove_punctuation(line)
         return line
 
     @staticmethod
-    def cast_to_lower_and_remove_punctuation_on_batch(lines: List[str]) -> List[str]:
+    def convert_to_lowercase_and_remove_punctuation_on_batch(
+        lines: List[str],
+    ) -> List[str]:
+        """Converts a batch of texts to lowercase and removes punctuation marks
+
+        Args:
+            lines (List[str]): a batch of texts
+
+        Returns:
+            List[str]: a batch of texts in lowercase without punctuation
+        """
         return [
-            TextHandler.cast_to_lower_and_remove_punctuation(line) for line in lines
+            TextHandler.convert_to_lowercase_and_remove_punctuation(line)
+            for line in lines
         ]
 
 
@@ -92,7 +117,7 @@ class ReCapitalizationModel:
         return predictions
 
     def restore_capitalization(self, texts: List[str]) -> List[str]:
-        texts = TextHandler.cast_to_lower_and_remove_punctuation_on_batch(texts)
+        texts = TextHandler.convert_to_lowercase_and_remove_punctuation_on_batch(texts)
         texts_words = TextHandler.split_texts_into_words(texts)
 
         inputs = self._tokenize_texts(texts_words)
