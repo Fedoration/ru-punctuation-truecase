@@ -3,7 +3,8 @@ import string
 from typing import List, Tuple
 
 import torch
-from transformers import AutoModel, AutoModelForTokenClassification, AutoTokenizer
+import transformers
+from transformers import AutoModelForTokenClassification, AutoTokenizer
 
 
 class TextHandler:
@@ -88,9 +89,19 @@ class TextHandler:
 
 
 class ReCapitalizationModel:
+    """Bert Token Classification model thats solves truecase problem"""
+
     def __init__(
         self, path_to_checkpoint, model_name, model_max_length, is_question=False
     ) -> None:
+        """Initialize recapitalization model
+
+        Args:
+            path_to_checkpoint (_type_): path to checkpoint for Bert Token Classification model
+            model_name (_type_): name of base bert model
+            model_max_length (_type_): max input tokens length
+            is_question (bool, optional): add question mark to the end of recapitalized text. Defaults to False.
+        """
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_name, model_max_length=model_max_length
         )
@@ -99,7 +110,17 @@ class ReCapitalizationModel:
         )
         self.is_question = is_question
 
-    def _tokenize_texts(self, texts_words: List[List[str]]):
+    def _tokenize_texts(
+        self, texts_words: List[List[str]]
+    ) -> transformers.tokenization_utils_base.BatchEncoding:
+        """Performs tokenization of a batch of texts divided into words
+
+        Args:
+            texts_words (List[List[str]]): a batch of texts divided into words
+
+        Returns:
+            transformers.tokenization_utils_base.BatchEncoding: a batch of texts with tokenized words
+        """
         inputs = self.tokenizer(
             texts_words,
             is_split_into_words=True,
@@ -109,7 +130,17 @@ class ReCapitalizationModel:
         )
         return inputs
 
-    def _predict_token_classification(self, inputs):
+    def _predict_token_classification(
+        self, inputs: transformers.tokenization_utils_base.BatchEncoding
+    ) -> torch.Tensor:
+        """Feed forward bert token classification model
+
+        Args:
+            inputs (transformers.tokenization_utils_base.BatchEncoding): token embeddings
+
+        Returns:
+            torch.Tensor: token class predictions
+        """
         with torch.no_grad():
             logits = self.token_classifier(**inputs).logits
 
@@ -117,6 +148,14 @@ class ReCapitalizationModel:
         return predictions
 
     def restore_capitalization(self, texts: List[str]) -> List[str]:
+        """Performs capitalization recovery. Accepts the input batch of texts, removes punctuation marks. Performs a reverse recovery from the token class to the definition of which register the word should be written in.
+
+        Args:
+            texts (List[str]): a batch of texts
+
+        Returns:
+            List[str]: a batch of texts with restored capitalization
+        """
         texts = TextHandler.convert_to_lowercase_and_remove_punctuation_on_batch(texts)
         texts_words = TextHandler.split_texts_into_words(texts)
 
@@ -143,6 +182,7 @@ class ReCapitalizationModel:
                 try:
                     is_upper = word_class[i] == "U"
                 except Exception as e:
+                    # the case when an unknown symbol came to the tokenizer
                     is_upper = False
                 if is_upper:
                     truecase_word = word.capitalize()
@@ -151,7 +191,7 @@ class ReCapitalizationModel:
 
                 truecase_words.append(truecase_word)
 
-            # Если требуется составить вопрос
+            # if you need to compose a question
             if self.is_question:
                 truecase_texts.append(" ".join(truecase_words) + "?")
             else:
