@@ -159,16 +159,22 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-*.txt
 *.csv
 *.tar.gz
 *.gz
 *.conll
 *.pickle
 .DS_Store
+
 notebooks/logs/
 notebooks/results/
 notebooks/wandb/
+
 src/wandb/
 src/results/
 src/saved_models/
+src/train/multipunct/
+
+data/archive/
+data/cached/
+data/tatoeba_dataset/

@@ -92,7 +92,12 @@ class ReCapitalizationModel:
     """Bert Token Classification model thats solves truecase problem"""
 
     def __init__(
-        self, path_to_checkpoint, model_name, model_max_length, is_question=False
+        self,
+        path_to_checkpoint,
+        model_name,
+        model_max_length,
+        is_question=False,
+        path_to_abbreviations=None,
     ) -> None:
         """Initialize recapitalization model
 
@@ -109,6 +114,20 @@ class ReCapitalizationModel:
             path_to_checkpoint
         )
         self.is_question = is_question
+
+        self.abbreviations = None
+
+        # If you want to recapitalize custom abbreviations from txt file
+        if path_to_abbreviations:
+            try:
+                with open(path_to_abbreviations, "r") as f:
+                    self.abbreviations = {
+                        line.strip().lower(): line.strip() for line in f.readlines()
+                    }
+            except Exception as e:
+                print(
+                    f"Unable to read the file {path_to_abbreviations}, failed with error {e}"
+                )
 
     def _tokenize_texts(
         self, texts_words: List[List[str]]
@@ -179,11 +198,20 @@ class ReCapitalizationModel:
 
             truecase_words = []
             for i, word in enumerate(text):
+                # check if this word is an abbreviation
+                if self.abbreviations and self.abbreviations.get(word):
+                    truecase_word = self.abbreviations.get(word)
+                    truecase_words.append(truecase_word)
+                    continue
+
+                # get word capitalization class
                 try:
                     is_upper = word_class[i] == "U"
                 except Exception as e:
                     # the case when an unknown symbol came to the tokenizer
                     is_upper = False
+
+                # write word with correct capitalization
                 if is_upper:
                     truecase_word = word.capitalize()
                 else:

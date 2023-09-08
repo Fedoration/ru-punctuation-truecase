@@ -1,4 +1,9 @@
-from config import MODEL_MAX_LENGTH, MODEL_NAME, PATH_TO_CHECKPOINT
+from config import (
+    MODEL_MAX_LENGTH,
+    MODEL_NAME,
+    PATH_TO_ABBREVIATIONS,
+    PATH_TO_CHECKPOINT,
+)
 from model import ReCapitalizationModel
 
 
@@ -9,9 +14,16 @@ def main():
         model_name=MODEL_NAME,
         model_max_length=MODEL_MAX_LENGTH,
         is_question=True,
+        path_to_abbreviations=PATH_TO_ABBREVIATIONS,
     )
 
-    test_queries = ["кто такая алла, !?пугачёва", "столица россии", "что такое москва"]
+    test_queries = [
+        "кто такая алла, !?пугачёва",
+        "столица россии",
+        "что такое москва",
+        "что такое сша",
+        "где находится университет вшэ",
+    ]
 
     recapitalized_queries = recapitalization_model.restore_capitalization(test_queries)
     for query, result in zip(test_queries, recapitalized_queries):
