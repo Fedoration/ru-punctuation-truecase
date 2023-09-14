@@ -23,6 +23,10 @@ def main():
         "что такое москва",
         "что такое сша",
         "где находится университет вшэ",
+        "кто такой криштиану роналду",
+        "что такое мфти",
+        "кто такой пак инфраструктуров",
+        "кто такая кошка",
     ]
 
     recapitalized_queries = recapitalization_model.restore_capitalization(test_queries)

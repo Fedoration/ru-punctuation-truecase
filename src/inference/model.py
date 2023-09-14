@@ -37,6 +37,7 @@ class TextHandler:
         Returns:
             str: input text without punctuation
         """
+        line = line.replace("-", " ")
         all_punct_marks = string.punctuation + "«»—"
 
         line = (
